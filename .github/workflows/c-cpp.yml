@@ -1,0 +1,31 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: configure
+      run: |
+        git clone https://github.com/osquery/osquery osquery
+        ln -s $(pwd) osquery/external/extension_connect
+        cd osquery
+        mkdir build
+        cd build
+        cmake -DOSQUERY_TOOLCHAIN_SYSROOT=/usr/local/osquery-toolchain -DOSQUERY_BUILD_TESTS=ON ..
+    - name: test
+      run: |
+        cmake --build . --target connect_extension_test
+        ./external/extension_connect/connect_extension_test
+    - name: make
+      run: |
+        cd osquery/build
+        cmake --build . --target connect_extension
