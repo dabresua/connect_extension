@@ -1,4 +1,12 @@
+cmake_minimum_required(VERSION 3.9)
+
+# CXX compiler is set by the osquery's toolchain
+# set(CMAKE_CXX_COMPILER "clang++")
 project("connect_extension")
+
+# Add compile flags to instrument the binaries for coverage
+set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping -O0 -g")
+set(CMAKE_CXX_STANDARD 17)
 
 # Include directories. These are common for the extension and the tests
 
