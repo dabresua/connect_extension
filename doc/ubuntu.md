@@ -59,6 +59,51 @@ cd external/extension_connect
 make -j(nproc)
 ```
 
+# How to build coverage reports for the extension
+
+After building the extension, the steps required to show the coverage reports are the following.
+
+| ⚠ It is mandatory to use the programs the osquery's toolchain provides. Otherwise, the commands won't work.
+
+Run the tests
+
+```bash
+./connect_extension_test
+```
+
+A file with the name of `default.profraw` is created. This file includes raw data for the coverage report.
+Raw profiles have to be indexed before they can be used to generate coverage reports. This is done using the “merge” tool in llvm-profdata (which can combine multiple raw profiles and index them at the same time):
+
+```bash
+/usr/local/osquery-toolchain/usr/bin/llvm-profdata merge -sparse default.profraw -o default.profdata
+```
+
+Which creates `default.profdata`.
+
+To show the report use the next command. Note that we are filtering osquery core and libraries.
+
+```bash
+/usr/local/osquery-toolchain/usr/bin/llvm-cov report ./connect_extension_test -instr-profile=default.profdata --ignore-filename-regex="ns_osquery*|libraries"
+```
+
+Report example:
+
+```bash
+lename                      Regions    Missed Regions     Cover   Functions  Missed Functions  Executed       Lines      Missed Lines     Cover
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+table/connect.cpp                  77                54    29.87%           7                 3    57.14%         207               134    35.27%
+tests/connect.cpp                  12                 1    91.67%           5                 1    80.00%          29                 1    96.55%
+tests/main.cpp                      1                 0   100.00%           1                 0   100.00%          13                 0   100.00%
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TOTAL                              90                55    38.89%          13                 4    69.23%         249               135    45.78%
+```
+
+For a line-by-line report, use the `show` command:
+
+```bash
+/usr/local/osquery-toolchain/usr/bin/llvm-cov show ./connect_extension_test -instr-profile=default.profdata --ignore-filename-regex="ns_osquery*|libraries"
+```
+
 # Run and debug using the interactive shell
 
 This method is suited for running the extension in a different terminal with gdb, if you don't need that, you can simply use:
